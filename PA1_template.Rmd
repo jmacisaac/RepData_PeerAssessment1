@@ -7,19 +7,70 @@ output:
 
 
 ## Loading and preprocessing the data
-
+activity_raw<- read.csv('activity.csv')
+activity <- na.omit(activity_raw)
 
 
 ## What is mean total number of steps taken per day?
+steps_day <- aggregate(steps ~ date, activity, sum)
 
-
+hist(steps_day$steps,
+	   main="Total number of steps per day", 
+     xlab="Steps/Day",
+	   ylab="Qty",
+	   col="blue")
+	 
+summary(steps_day)
 
 ## What is the average daily activity pattern?
 
+avg_interval <- aggregate(steps ~ interval, activity, mean)
 
+plot(avg_interval$interval, 
+	   avg_interval$steps,
+	 type='l', 
+	 main="Average Daily Activity Pattern", 
+     xlab="Interval",
+     ylab="Average Steps Taken",
+	 col="blue")
+
+avg_interval[row_max <- which.max(avg_interval$steps), ]
 
 ## Imputing missing values
 
+sum(is.na(raw_activity))
+activity_new <- (activity_raw)
+activity_new$steps[is.na(activity_new$steps)] <- mean(na.omit(activity_raw$steps))
 
+steps_day_new <- aggregate(steps ~ date, activity_new, sum)
+
+hist(steps_day_new$steps,
+	 main="Total number of steps per day", 
+     xlab="Steps/Day",
+	 ylab="Qty",
+	 col="blue")
+
+round(mean(steps_day_new$steps))
+round(median(steps_day_new$steps))
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+activity_raw$date <- as.Date(activity_raw$date)
+activity_raw$day <- weekdays(activity_raw$date)
+activity_raw$week_wkd <- "weekday"
+
+activity_raw$week_wkd[activity_raw$day %in% c("Saturday", "Sunday")] <- "weekend"
+
+step5 <- aggregate(steps ~ interval + week_wkd, activity_raw, mean)
+
+library(ggplot2)
+
+qplot(interval, 
+      steps, 
+      data = step5, 
+      type = "l", 
+      geom="line",
+      xlab = "Interval", 
+      ylab = "# of steps", 
+      main = "activity patterns between weekdays and weekends",
+      facets =week_wkd ~ .)
